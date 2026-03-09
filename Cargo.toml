@@ -1,7 +1,7 @@
 [package]
 name = "mkdedede"
 license = "AGPL-3.0"
-description = "Rust crate for decoding Mario Kart ghost data passwords (Double Dash!! and DS)"
+description = "Rust crate for decoding and encoding Mario Kart ghost data passwords (Double Dash!! and DS)"
 keywords = ["decoder", "mario-kart"]
 categories = ["encoding", "parsing"]
 repository = "https://github.com/tpglitch/mkdedede"

@@ -1,6 +1,6 @@
 # mkdedede
 
-A Rust crate for decoding Mario Kart: Double Dash!! and Mario Kart DS ghost data passwords
+A Rust crate for decoding and encoding Mario Kart: Double Dash!! and Mario Kart DS ghost data passwords
 
 ---
 
@@ -10,7 +10,7 @@ Double Dash ported from the JavaScript decoder by [WaluigiBSOD](https://github.c
 
 DS ported from the C decoder by [simontime](https://github.com/simontime/MKDSTTCodeDecoder/blob/master/decoder.c).
 
-## Simple Double Dash example
+## Simple Double Dash decoding example
 
 ```rust
 use mkdedede::dd::decode;

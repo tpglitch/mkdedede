@@ -95,6 +95,27 @@ impl Course {
             _ => None,
         }
     }
+
+    pub(crate) fn to_index(self) -> u8 {
+        match self {
+            Course::LuigiCircuit => 0,
+            Course::PeachBeach => 1,
+            Course::BabyPark => 2,
+            Course::DryDryDesert => 3,
+            Course::MushroomBridge => 4,
+            Course::MarioCircuit => 5,
+            Course::DaisyCruiser => 6,
+            Course::WaluigiStadium => 7,
+            Course::SherbetLand => 8,
+            Course::MushroomCity => 9,
+            Course::YoshiCircuit => 10,
+            Course::DkMountain => 11,
+            Course::WarioColosseum => 12,
+            Course::DinoDinoJungle => 13,
+            Course::BowsersCastle => 14,
+            Course::RainbowRoad => 15,
+        }
+    }
 }
 
 impl fmt::Display for Course {
@@ -179,6 +200,32 @@ impl Character {
             18 => Some(Character::KingBoo),
             19 => Some(Character::PeteyPiranha),
             _ => None,
+        }
+    }
+
+    /// Returns the 0-based index used internally (password stores index + 1).
+    pub(crate) fn to_index(self) -> u8 {
+        match self {
+            Character::BabyMario => 0,
+            Character::BabyLuigi => 1,
+            Character::Paratroopa => 2,
+            Character::Koopa => 3,
+            Character::Peach => 4,
+            Character::Daisy => 5,
+            Character::Mario => 6,
+            Character::Luigi => 7,
+            Character::Wario => 8,
+            Character::Waluigi => 9,
+            Character::Yoshi => 10,
+            Character::Birdo => 11,
+            Character::DonkeyKong => 12,
+            Character::DiddyKong => 13,
+            Character::Bowser => 14,
+            Character::BowserJr => 15,
+            Character::Toad => 16,
+            Character::Toadette => 17,
+            Character::KingBoo => 18,
+            Character::PeteyPiranha => 19,
         }
     }
 }
@@ -267,6 +314,32 @@ impl Kart {
             19 => Some(Kart::PiranhaPipes),
             20 => Some(Kart::ParadeKart),
             _ => None,
+        }
+    }
+
+    pub(crate) fn to_index(self) -> u8 {
+        match self {
+            Kart::RedFire => 0,
+            Kart::DkJumbo => 1,
+            Kart::TurboYoshi => 2,
+            Kart::KoopaDasher => 3,
+            Kart::HeartCoach => 4,
+            Kart::GooGooBuggy => 5,
+            Kart::WarioCar => 6,
+            Kart::KoopaKing => 7,
+            Kart::GreenFire => 8,
+            Kart::BarrelTrain => 9,
+            Kart::TurboBirdo => 10,
+            Kart::ParaWing => 11,
+            Kart::BloomCoach => 12,
+            Kart::RattleBuggy => 13,
+            Kart::WaluigiRacer => 14,
+            Kart::BulletBlaster => 15,
+            Kart::ToadKart => 16,
+            Kart::ToadetteKart => 17,
+            Kart::BooPipes => 18,
+            Kart::PiranhaPipes => 19,
+            Kart::ParadeKart => 20,
         }
     }
 }
@@ -374,6 +447,85 @@ impl fmt::Display for GhostData {
         writeln!(f, "Total Time: {}", self.total_time)?;
         write!(f, "Best Lap:   {}", self.best_lap)
     }
+}
+
+/// Unpack 10 bytes into 16 five-bit symbols (inverse of the pack step in [`decode`]).
+fn unpack_symbols(bytes: &[u8; 10]) -> [u8; 16] {
+    let b = bytes;
+    let mut s = [0u8; 16];
+    s[0] = b[0] >> 3;
+    s[1] = ((b[0] & 0x07) << 2) | (b[1] >> 6);
+    s[2] = (b[1] >> 1) & 0x1F;
+    s[3] = ((b[1] & 0x01) << 4) | (b[2] >> 4);
+    s[4] = ((b[2] & 0x0F) << 1) | (b[3] >> 7);
+    s[5] = (b[3] >> 2) & 0x1F;
+    s[6] = ((b[3] & 0x03) << 3) | (b[4] >> 5);
+    s[7] = b[4] & 0x1F;
+    s[8] = b[5] >> 3;
+    s[9] = ((b[5] & 0x07) << 2) | (b[6] >> 6);
+    s[10] = (b[6] >> 1) & 0x1F;
+    s[11] = ((b[6] & 0x01) << 4) | (b[7] >> 4);
+    s[12] = ((b[7] & 0x0F) << 1) | (b[8] >> 7);
+    s[13] = (b[8] >> 2) & 0x1F;
+    s[14] = ((b[8] & 0x03) << 3) | (b[9] >> 5);
+    s[15] = b[9] & 0x1F;
+    s
+}
+
+/// Encodes a [`GhostData`] into a 16-character Mario Kart: Double Dash!! password.
+///
+/// The returned string uses only uppercase letters from the game's base-32
+/// alphabet (`G6EQTXYN4WRHBFKOIJAPCD5S8V7UZ3LM`) and is always exactly 16
+/// characters long. Passing the result to [`decode`] will recover the original
+/// [`GhostData`].
+pub fn encode(data: &GhostData) -> String {
+    let course_idx = data.course.to_index() as u32;
+    let kart_idx = data.kart.to_index() as u32;
+    // Password stores driver indices as 1-based
+    let driver1_idx = data.driver1.to_index() as u32 + 1;
+    let driver2_idx = data.driver2.to_index() as u32 + 1;
+    let total_ms = data.total_time.0;
+    let best_ms = data.best_lap.0;
+
+    // Checksum: bits 4:2 of the final d[2] are zero (they come from unused padding),
+    // so their contribution to tmp is 0.
+    let tmp = course_idx + kart_idx + driver1_idx + driver2_idx + total_ms + best_ms;
+    let checksum =
+        ((tmp & 0xFF) + ((tmp >> 8) & 0xFF) + ((tmp >> 16) & 0xFF) + ((tmp >> 24) & 0xFF)) as u8
+            & 0x1F;
+
+    let mut d = [0u8; 10];
+    d[0] = (total_ms >> 11) as u8;
+    d[1] = (total_ms >> 3) as u8;
+    // d[2]: total_ms[2:0] in bits 7:5, driver2_idx[4:3] in bits 1:0, bits 4:2 = 0
+    d[2] = ((total_ms & 0x7) << 5) as u8 | ((driver2_idx >> 3) & 0x3) as u8;
+    // d[3]: driver2_idx[2:0] in bits 7:5, checksum in bits 4:0
+    d[3] = ((driver2_idx & 0x7) << 5) as u8 | checksum;
+    d[4] = (best_ms >> 10) as u8;
+    d[5] = (best_ms >> 2) as u8;
+    // d[6]: best_ms[1:0] in bits 7:6, kart_idx in bits 5:1, driver1_idx[4] in bit 0
+    d[6] = ((best_ms & 0x3) << 6) as u8
+        | ((kart_idx & 0x1F) << 1) as u8
+        | ((driver1_idx >> 4) & 0x1) as u8;
+    // d[7]: driver1_idx[3:0] in bits 7:4, course_idx in bits 3:0
+    d[7] = ((driver1_idx & 0xF) << 4) as u8 | (course_idx & 0xF) as u8;
+    // d[8] and d[9] hold the encryption key; use 0 so the stream is deterministic
+    d[8] = 0;
+    d[9] = 0;
+
+    // Encrypt d[0..8] using the same XOR stream as decryption (self-inverse)
+    let mut x: i32 = ((d[8] as i32) << 8) | (d[9] as i32);
+    for byte in d[0..8].iter_mut() {
+        *byte ^= (x >> 8) as u8;
+        let y = (67_983_421i64 * (x as i64) + 1) as i32;
+        let z = (y / 100_000_000) * 100_000_000;
+        x = y - z;
+    }
+
+    let syms = unpack_symbols(&d);
+    syms.iter()
+        .map(|&s| CHAR_TABLE[s as usize] as char)
+        .collect()
 }
 
 /// Decodes a 16-character MKDD ghost data password.

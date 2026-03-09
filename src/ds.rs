@@ -140,6 +140,43 @@ impl Course {
             _ => None,
         }
     }
+
+    pub(crate) fn to_index(self) -> u8 {
+        match self {
+            Course::Figure8Circuit => 0,
+            Course::YoshiFalls => 1,
+            Course::CheepCheepBeach => 2,
+            Course::LuigisMansion => 3,
+            Course::DesertHills => 4,
+            Course::DelfinoSquare => 5,
+            Course::WaluigiPinball => 6,
+            Course::ShroomRidge => 7,
+            Course::DkPass => 8,
+            Course::TickTockClock => 9,
+            Course::MarioCircuit => 10,
+            Course::AirshipFortress => 11,
+            Course::WarioStadium => 12,
+            Course::PeachGardens => 13,
+            Course::BowserCastle => 14,
+            Course::RainbowRoad => 15,
+            Course::SnesMarioCircuit1 => 16,
+            Course::N64MooMooFarm => 17,
+            Course::GbaPeachCircuit => 18,
+            Course::GcnLuigiCircuit => 19,
+            Course::SnesDonutPlains1 => 20,
+            Course::N64FrappeSnowland => 21,
+            Course::GbaBowserCastle2 => 22,
+            Course::GcnBabyPark => 23,
+            Course::SnesKoopaBeach2 => 24,
+            Course::N64ChocoMountain => 25,
+            Course::GbaLuigiCircuit => 26,
+            Course::GcnMushroomBridge => 27,
+            Course::SnesChocoIsland2 => 28,
+            Course::N64BansheeBoardwalk => 29,
+            Course::GbaSkyGarden => 30,
+            Course::GcnYoshiCircuit => 31,
+        }
+    }
 }
 
 impl fmt::Display for Course {
@@ -202,6 +239,24 @@ impl Character {
             11 => Some(Character::Rob),
             12 => Some(Character::ShyGuy),
             _ => None,
+        }
+    }
+
+    pub(crate) fn to_index(self) -> u8 {
+        match self {
+            Character::Mario => 0,
+            Character::DonkeyKong => 1,
+            Character::Toad => 2,
+            Character::Bowser => 3,
+            Character::Peach => 4,
+            Character::Wario => 5,
+            Character::Yoshi => 6,
+            Character::Luigi => 7,
+            Character::DryBones => 8,
+            Character::Daisy => 9,
+            Character::Waluigi => 10,
+            Character::Rob => 11,
+            Character::ShyGuy => 12,
         }
     }
 }
@@ -340,6 +395,48 @@ impl Kart {
             _ => None,
         }
     }
+
+    pub(crate) fn to_index(self) -> u8 {
+        match self {
+            Kart::StandardMr => 0,
+            Kart::ShootingStar => 1,
+            Kart::BDasher => 2,
+            Kart::StandardDk => 3,
+            Kart::Wildlife => 4,
+            Kart::RambiRider => 5,
+            Kart::StandardTd => 6,
+            Kart::Mushmellow => 7,
+            Kart::FourWheelCradle => 8,
+            Kart::StandardBw => 9,
+            Kart::Hurricane => 10,
+            Kart::Tyrant => 11,
+            Kart::StandardPc => 12,
+            Kart::LightTripper => 13,
+            Kart::Royale => 14,
+            Kart::StandardWr => 15,
+            Kart::Brute => 16,
+            Kart::Dragonfly => 17,
+            Kart::StandardYs => 18,
+            Kart::Egg1 => 19,
+            Kart::Cucumber => 20,
+            Kart::StandardLg => 21,
+            Kart::Poltergust4000 => 22,
+            Kart::Streamliner => 23,
+            Kart::StandardDb => 24,
+            Kart::DryBomber => 25,
+            Kart::Banisher => 26,
+            Kart::StandardDs => 27,
+            Kart::LightDancer => 28,
+            Kart::PowerFlower => 29,
+            Kart::StandardWl => 30,
+            Kart::GoldMantis => 31,
+            Kart::Zipper => 32,
+            Kart::StandardRb => 33,
+            Kart::RobBls => 34,
+            Kart::RobLgs => 35,
+            Kart::StandardSg => 36,
+        }
+    }
 }
 
 impl fmt::Display for Kart {
@@ -348,7 +445,7 @@ impl fmt::Display for Kart {
     }
 }
 
-/// A race time stored as milliseconds.
+/// A race time stored as milliseconds
 ///
 /// Displays as `M:SS.mmm`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -467,6 +564,39 @@ fn decrypt(code: &mut [u8; 10]) {
     code[9] ^= 0xC3;
 }
 
+/// XOR-chain encryption used by MKDS (inverse of [`decrypt`]).
+///
+/// Reverses the decryption steps in the opposite order.
+fn encrypt(code: &mut [u8; 10]) {
+    code[9] ^= 0xC3;
+    for i in (0..9).rev() {
+        code[i] ^= code[i + 1];
+    }
+}
+
+/// Unpack 10 bytes back into 16 five-bit symbols (inverse of [`pack_symbols`]).
+fn unpack_symbols(bytes: &[u8; 10]) -> [u8; 16] {
+    let b = bytes;
+    let mut s = [0u8; 16];
+    s[0] = b[0] >> 3;
+    s[1] = ((b[0] & 0x07) << 2) | (b[1] >> 6);
+    s[2] = (b[1] >> 1) & 0x1F;
+    s[3] = ((b[1] & 0x01) << 4) | (b[2] >> 4);
+    s[4] = ((b[2] & 0x0F) << 1) | (b[3] >> 7);
+    s[5] = (b[3] >> 2) & 0x1F;
+    s[6] = ((b[3] & 0x03) << 3) | (b[4] >> 5);
+    s[7] = b[4] & 0x1F;
+    s[8] = b[5] >> 3;
+    s[9] = ((b[5] & 0x07) << 2) | (b[6] >> 6);
+    s[10] = (b[6] >> 1) & 0x1F;
+    s[11] = ((b[6] & 0x01) << 4) | (b[7] >> 4);
+    s[12] = ((b[7] & 0x0F) << 1) | (b[8] >> 7);
+    s[13] = (b[8] >> 2) & 0x1F;
+    s[14] = ((b[8] & 0x03) << 3) | (b[9] >> 5);
+    s[15] = b[9] & 0x1F;
+    s
+}
+
 /// Standard CRC-16/CCITT (polynomial 0x1021, initial value 0).
 fn crc16(data: &[u8]) -> u16 {
     let mut sum: u16 = 0;
@@ -485,6 +615,47 @@ fn crc16(data: &[u8]) -> u16 {
         }
     }
     sum
+}
+
+/// Encodes a [`GhostData`] into a 16-character Mario Kart DS password.
+///
+/// The returned string uses only uppercase letters from the game's base-32
+/// alphabet (`S7LCX3JZE8FG4HBKWN52YPA6RTU9VMDQ`) and is always exactly 16
+/// characters long. Passing the result to [`decode`] will recover the original
+/// [`GhostData`].
+pub fn encode(data: &GhostData) -> String {
+    let char_idx = data.character.to_index() as u32;
+    let kart_idx = data.kart.to_index() as u32;
+    let course_idx = data.course.to_index() as u32;
+
+    let kartch = char_idx * 37 + kart_idx;
+    let stats = (data.time.0 << 14) | (course_idx << 9) | kartch;
+
+    let mut code = [0u8; 10];
+    let stats_bytes = stats.to_le_bytes();
+    code[0] = stats_bytes[0];
+    code[1] = stats_bytes[1];
+    code[2] = stats_bytes[2];
+    code[3] = stats_bytes[3];
+
+    let c1 = data.player[0] as u16;
+    let c2 = data.player[1] as u16;
+    code[4] = (c1 & 0xFF) as u8;
+    code[5] = (c1 >> 8) as u8;
+    code[6] = (c2 & 0xFF) as u8;
+    code[7] = (c2 >> 8) as u8;
+    // code[8] and code[9] remain 0 for CRC computation
+
+    let crc = crc16(&code);
+    code[8] = (crc >> 8) as u8;
+    code[9] = (crc & 0xFF) as u8;
+
+    encrypt(&mut code);
+
+    let syms = unpack_symbols(&code);
+    syms.iter()
+        .map(|&s| BASE32_TABLE[s as usize] as char)
+        .collect()
 }
 
 /// Decodes a 16-character Mario Kart DS ghost data password.
