@@ -5,7 +5,7 @@ description = "Rust crate for decoding and encoding Mario Kart ghost data passwo
 keywords = ["decoder", "mario-kart"]
 categories = ["encoding", "parsing"]
 repository = "https://github.com/tpglitch/mkdedede"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
 
 [dependencies]
