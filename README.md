@@ -1,4 +1,4 @@
-# mkdedede
+# MKDedede
 
 A Rust crate for decoding and encoding Mario Kart: Double Dash!! and Mario Kart DS ghost data passwords
 
