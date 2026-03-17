@@ -31,7 +31,7 @@ To build for C/C++, use cargo to build the native bindings:
 cargo build --release
 ```
 
-This will produce `.so`, `.dylib`, or `.dll` (and their respective static architectures) inside `target/release/`. 
+This will produce `.so`, `.dylib`, or `.dll` (and their respective static architectures) inside `target/release/`.
 
 Include the provided header from `include/mkdedede.h` in your project and link the output shared library.
 
@@ -41,11 +41,15 @@ Include the provided header from `include/mkdedede.h` in your project and link t
 
 int main() {
     MkddGhostDataC data;
-    MkdededeDecodeStatus status = mkdedede_mkdd_decode("SOME16CHARPASSWD", &data);
+    MkdededeDecodeStatus status = mkdedede_mkdd_decode("NJTXAJFLY4M7BGGG", &data);
 
     if (status == MKDEDEDE_SUCCESS) {
-        printf("Course: %d\n", data.course);
-        // ...
+        printf("Course: %s\n", mkdedede_mkdd_course_name(data.course));
+        printf("Kart: %s\n", mkdedede_mkdd_kart_name(data.kart));
+
+        char time_str[16] = {0};
+        mkdedede_mkdd_format_time(data.total_time_ms, time_str);
+        printf("Total Time: %s\n", time_str);
     } else {
         printf("Decode failed with status: %d\n", status);
     }

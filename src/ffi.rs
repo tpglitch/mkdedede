@@ -220,3 +220,106 @@ pub unsafe extern "C" fn mkdedede_ds_encode(
 
     MkdededeDecodeStatus::Success
 }
+
+/// Get the display name for a Mario Kart: Double Dash!! course
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn mkdedede_mkdd_course_name(course_index: u8) -> *const c_char {
+    if let Some(course) = double_dash::Course::from_index(course_index) {
+        return course.name().as_ptr() as *const c_char;
+    }
+    std::ptr::null()
+}
+
+/// Get the display name for a Mario Kart: Double Dash!! character
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn mkdedede_mkdd_character_name(character_index: u8) -> *const c_char {
+    if let Some(character) = double_dash::Character::from_index(character_index) {
+        return character.name().as_ptr() as *const c_char;
+    }
+    std::ptr::null()
+}
+
+/// Get the display name for a Mario Kart: Double Dash!! kart
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn mkdedede_mkdd_kart_name(kart_index: u8) -> *const c_char {
+    if let Some(kart) = double_dash::Kart::from_index(kart_index) {
+        return kart.name().as_ptr() as *const c_char;
+    }
+    std::ptr::null()
+}
+
+/// Get the number of laps for a Mario Kart: Double Dash!! course
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn mkdedede_mkdd_course_laps(course_index: u8) -> u32 {
+    if let Some(course) = double_dash::Course::from_index(course_index) {
+        return course.laps();
+    }
+    0
+}
+
+/// Format a Mario Kart: Double Dash!! lap time as a string
+/// out_str must point to at least 16 bytes
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn mkdedede_mkdd_format_time(
+    time_ms: u32,
+    out_str: *mut c_char,
+) -> MkdededeDecodeStatus {
+    if out_str.is_null() {
+        return MkdededeDecodeStatus::NullPointer;
+    }
+
+    let time = double_dash::LapTime(time_ms);
+    let formatted = format!("{}", time);
+    let c_str = CString::new(formatted).unwrap();
+    unsafe {
+        ptr::copy_nonoverlapping(c_str.as_ptr(), out_str, c_str.to_bytes_with_nul().len());
+    }
+    MkdededeDecodeStatus::Success
+}
+
+/// Get the display name for a Mario Kart DS course
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn mkdedede_ds_course_name(course_index: u8) -> *const c_char {
+    if let Some(course) = ds::Course::from_index(course_index) {
+        return course.name().as_ptr() as *const c_char;
+    }
+    std::ptr::null()
+}
+
+/// Get the display name for a Mario Kart DS character
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn mkdedede_ds_character_name(character_index: u8) -> *const c_char {
+    if let Some(character) = ds::Character::from_index(character_index) {
+        return character.name().as_ptr() as *const c_char;
+    }
+    std::ptr::null()
+}
+
+/// Get the display name for a Mario Kart DS kart
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn mkdedede_ds_kart_name(kart_index: u8) -> *const c_char {
+    if let Some(kart) = ds::Kart::from_index(kart_index) {
+        return kart.name().as_ptr() as *const c_char;
+    }
+    std::ptr::null()
+}
+
+/// Format a Mario Kart DS race time as a string
+/// out_str must point to at least 16 bytes
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn mkdedede_ds_format_time(
+    time_ms: u32,
+    out_str: *mut c_char,
+) -> MkdededeDecodeStatus {
+    if out_str.is_null() {
+        return MkdededeDecodeStatus::NullPointer;
+    }
+
+    let time = ds::RaceTime(time_ms);
+    let formatted = format!("{}", time);
+    let c_str = CString::new(formatted).unwrap();
+    unsafe {
+        ptr::copy_nonoverlapping(c_str.as_ptr(), out_str, c_str.to_bytes_with_nul().len());
+    }
+    MkdededeDecodeStatus::Success
+}

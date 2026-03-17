@@ -16,8 +16,16 @@ int main()
   og_data.best_lap_ms = 40000;
 
   printf("Original Data:\n");
-  printf("Course: %d, Kart: %d, Drivers: %d | %d\n", og_data.course, og_data.kart, og_data.driver1, og_data.driver2);
-  printf("Times: %d (Total), %d (Best Lap)\n\n", og_data.total_time_ms, og_data.best_lap_ms);
+  printf("Course: %s\n", mkdedede_mkdd_course_name(og_data.course));
+  printf("Kart: %s\n", mkdedede_mkdd_kart_name(og_data.kart));
+  printf("Drivers: %s | %s\n", mkdedede_mkdd_character_name(og_data.driver1), mkdedede_mkdd_character_name(og_data.driver2));
+
+  char total_time[16] = {0};
+  char best_lap[16] = {0};
+  mkdedede_mkdd_format_time(og_data.total_time_ms, total_time);
+  mkdedede_mkdd_format_time(og_data.best_lap_ms, best_lap);
+  printf("Times: %s (Total), %s (Best Lap)\n", total_time, best_lap);
+  printf("Laps: %u\n\n", mkdedede_mkdd_course_laps(og_data.course));
 
   // 2. Encode to string (needs 17 bytes for 16-char password + null terminator)
   char password[17] = {0};
@@ -38,9 +46,15 @@ int main()
   if (decode_status == MKDEDEDE_SUCCESS)
   {
     printf("Decoded successfully!\n");
-    printf("Course: %d\n", decoded_data.course);
-    printf("Kart: %d\n", decoded_data.kart);
-    printf("Total Time MS: %d\n", decoded_data.total_time_ms);
+    printf("Course: %s\n", mkdedede_mkdd_course_name(decoded_data.course));
+    printf("Kart: %s\n", mkdedede_mkdd_kart_name(decoded_data.kart));
+
+    char decoded_total[16] = {0};
+    char decoded_best[16] = {0};
+    mkdedede_mkdd_format_time(decoded_data.total_time_ms, decoded_total);
+    mkdedede_mkdd_format_time(decoded_data.best_lap_ms, decoded_best);
+    printf("Total Time: %s\n", decoded_total);
+    printf("Best Lap: %s\n", decoded_best);
   }
   else
   {

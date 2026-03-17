@@ -237,6 +237,71 @@ extern "C"
    */
   MkdededeDecodeStatus mkdedede_ds_encode(const DsGhostDataC *data, char *out_password);
 
+/**
+ * Get the display name for a Mario Kart: Double Dash!! course
+ * @param course_index The course index (0-15)
+ * @return Pointer to a static string with the course name, or NULL if invalid
+ */
+const char *mkdedede_mkdd_course_name(uint8_t course_index);
+
+/**
+ * Get the display name for a Mario Kart: Double Dash!! character
+ * @param character_index The character index (0-19)
+ * @return Pointer to a static string with the character name, or NULL if invalid
+ */
+const char *mkdedede_mkdd_character_name(uint8_t character_index);
+
+/**
+ * Get the display name for a Mario Kart: Double Dash!! kart
+ * @param kart_index The kart index (0-20)
+ * @return Pointer to a static string with the kart name, or NULL if invalid
+ */
+const char *mkdedede_mkdd_kart_name(uint8_t kart_index);
+
+/**
+ * Get the number of laps for a Mario Kart: Double Dash!! course
+ * @param course_index The course index (0-15)
+ * @return The lap count, or 0 if invalid
+ */
+uint32_t mkdedede_mkdd_course_laps(uint8_t course_index);
+
+/**
+ * Format a Mario Kart: Double Dash!! lap time as a string
+ * @param time_ms The time in milliseconds
+ * @param out_str Pointer to a char array of at least 16 bytes for output
+ * @return MKDEDEDE_SUCCESS on success, or MKDEDEDE_NULL_POINTER if out_str is NULL
+ */
+MkdededeDecodeStatus mkdedede_mkdd_format_time(uint32_t time_ms, char *out_str);
+
+/**
+ * Get the display name for a Mario Kart DS course
+ * @param course_index The course index (0-31)
+ * @return Pointer to a static string with the course name, or NULL if invalid
+ */
+const char *mkdedede_ds_course_name(uint8_t course_index);
+
+/**
+ * Get the display name for a Mario Kart DS character
+ * @param character_index The character index (0-12)
+ * @return Pointer to a static string with the character name, or NULL if invalid
+ */
+const char *mkdedede_ds_character_name(uint8_t character_index);
+
+/**
+ * Get the display name for a Mario Kart DS kart
+ * @param kart_index The kart index (0-36)
+ * @return Pointer to a static string with the kart name, or NULL if invalid
+ */
+const char *mkdedede_ds_kart_name(uint8_t kart_index);
+
+/**
+ * Format a Mario Kart DS race time as a string
+ * @param time_ms The time in milliseconds
+ * @param out_str Pointer to a char array of at least 16 bytes for output
+ * @return MKDEDEDE_SUCCESS on success, or MKDEDEDE_NULL_POINTER if out_str is NULL
+ */
+MkdededeDecodeStatus mkdedede_ds_format_time(uint32_t time_ms, char *out_str);
+
 #ifdef __cplusplus
 }
 #endif
