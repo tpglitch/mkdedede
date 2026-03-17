@@ -8,10 +8,10 @@ int main()
 
   // 1. Prepare data to encode
   MkddGhostDataC og_data;
-  og_data.course = 4;  // Mushroom Bridge
-  og_data.kart = 0;    // Red Fire
-  og_data.driver1 = 6; // Mario
-  og_data.driver2 = 7; // Luigi
+  og_data.course = MKDD_COURSE_MUSHROOMBRIDGE;
+  og_data.kart = MKDD_KART_REDFIRE;
+  og_data.driver1 = MKDD_CHARACTER_MARIO;
+  og_data.driver2 = MKDD_CHARACTER_LUIGI;
   og_data.total_time_ms = 123456;
   og_data.best_lap_ms = 40000;
 
