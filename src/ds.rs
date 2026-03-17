@@ -1,4 +1,4 @@
-//! Mario Kart DS ghost data password decoder.
+//! Mario Kart DS ghost data password decoder
 //!
 //! Decodes the 16-character ghost data passwords Mario Kart DS generates after
 //! a time trial. Each password encodes a course, character, kart, a race time,

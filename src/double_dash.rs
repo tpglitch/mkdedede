@@ -1,4 +1,4 @@
-//! Mario Kart: Double Dash!! password decoder.
+//! Mario Kart: Double Dash!! password decoder
 //!
 //! Decodes the 16-character ghost data passwords the game generates after a
 //! time trial. Each password encodes a course, kart, two drivers, a total
