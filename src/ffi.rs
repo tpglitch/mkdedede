@@ -1,3 +1,8 @@
+//! Foreign Function Interface (FFI) bindings for C/C++ integration
+//!
+//! This module exposes C-compatible data structures and functions to encode
+//! and decode Mario Kart ghost data passwords from other languages
+
 use std::ffi::{CStr, CString, c_char};
 use std::ptr;
 
