@@ -2,7 +2,7 @@
 //!
 //! Decodes the 16-character ghost data passwords Mario Kart DS generates after
 //! a time trial. Each password encodes a course, character, kart, a race time,
-//! and a two-character UTF-16 player name, all protected by a CRC-16 checksum.
+//! and a two-character UTF-16 player name, all protected by a CRC-16 checksum
 //!
 //! # Example
 //! ```
@@ -65,7 +65,7 @@ pub enum Course {
 }
 
 impl Course {
-    /// Returns the display name of the course.
+    /// Returns the display name of the course
     pub fn name(self) -> &'static str {
         match self {
             Course::Figure8Circuit => "Figure-8 Circuit",
@@ -103,7 +103,7 @@ impl Course {
         }
     }
 
-    fn from_index(i: u8) -> Option<Self> {
+    pub(crate) fn from_index(i: u8) -> Option<Self> {
         match i {
             0 => Some(Course::Figure8Circuit),
             1 => Some(Course::YoshiFalls),
@@ -204,7 +204,7 @@ pub enum Character {
 }
 
 impl Character {
-    /// Returns the display name of the character.
+    /// Returns the display name of the character
     pub fn name(self) -> &'static str {
         match self {
             Character::Mario => "Mario",
@@ -223,7 +223,7 @@ impl Character {
         }
     }
 
-    fn from_index(i: u8) -> Option<Self> {
+    pub(crate) fn from_index(i: u8) -> Option<Self> {
         match i {
             0 => Some(Character::Mario),
             1 => Some(Character::DonkeyKong),
@@ -310,7 +310,7 @@ pub enum Kart {
 }
 
 impl Kart {
-    /// Returns the display name of the kart.
+    /// Returns the display name of the kart
     pub fn name(self) -> &'static str {
         match self {
             Kart::StandardMr => "Standard MR",
@@ -353,7 +353,7 @@ impl Kart {
         }
     }
 
-    fn from_index(i: u8) -> Option<Self> {
+    pub(crate) fn from_index(i: u8) -> Option<Self> {
         match i {
             0 => Some(Kart::StandardMr),
             1 => Some(Kart::ShootingStar),
@@ -447,22 +447,22 @@ impl fmt::Display for Kart {
 
 /// A race time stored as milliseconds
 ///
-/// Displays as `M:SS.mmm`.
+/// Displays as `M:SS.mmm`
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct RaceTime(pub u32);
 
 impl RaceTime {
-    /// Returns the minutes component.
+    /// Returns the minutes component
     pub fn minutes(self) -> u32 {
         self.0 / 60_000
     }
 
-    /// Returns the seconds component (0-59).
+    /// Returns the seconds component (0-59)
     pub fn seconds(self) -> u32 {
         (self.0 / 1_000) % 60
     }
 
-    /// Returns the milliseconds component (0-999).
+    /// Returns the milliseconds component (0-999)
     pub fn milliseconds(self) -> u32 {
         self.0 % 1_000
     }
@@ -517,7 +517,7 @@ pub struct GhostData {
     pub kart: Kart,
     pub time: RaceTime,
     /// The two UTF-16 characters that make up the player's name as stored in
-    /// the password. Both are `'\0'` when the name is absent.
+    /// the password. Both are `'\0'` when the name is absent
     pub player: [char; 2],
 }
 
@@ -532,12 +532,12 @@ impl fmt::Display for GhostData {
     }
 }
 
-/// Look up a character's 5-bit index in the DS base-32 table.
+/// Look up a character's 5-bit index in the DS base-32 table
 fn base32_index(c: u8) -> Option<u8> {
     BASE32_TABLE.iter().position(|&b| b == c).map(|p| p as u8)
 }
 
-/// Pack 16 five-bit symbols into 10 bytes (identical bit-layout to MKDD).
+/// Pack 16 five-bit symbols into 10 bytes (identical bit-layout to MKDD)
 fn pack_symbols(syms: &[u8; 16]) -> [u8; 10] {
     let s = syms;
     let mut out = [0u8; 10];
@@ -554,9 +554,9 @@ fn pack_symbols(syms: &[u8; 16]) -> [u8; 10] {
     out
 }
 
-/// XOR-chain decryption used by MKDS.
+/// XOR-chain decryption used by MKDS
 ///
-/// `code[i] ^= code[i+1]` for i in 0..8, then `code[9] ^= 0xC3`.
+/// `code[i] ^= code[i+1]` for i in 0..8, then `code[9] ^= 0xC3`
 fn decrypt(code: &mut [u8; 10]) {
     for i in 0..9 {
         code[i] ^= code[i + 1];
@@ -564,9 +564,9 @@ fn decrypt(code: &mut [u8; 10]) {
     code[9] ^= 0xC3;
 }
 
-/// XOR-chain encryption used by MKDS (inverse of [`decrypt`]).
+/// XOR-chain encryption used by MKDS (inverse of [`decrypt`])
 ///
-/// Reverses the decryption steps in the opposite order.
+/// Reverses the decryption steps in the opposite order
 fn encrypt(code: &mut [u8; 10]) {
     code[9] ^= 0xC3;
     for i in (0..9).rev() {
@@ -574,7 +574,7 @@ fn encrypt(code: &mut [u8; 10]) {
     }
 }
 
-/// Unpack 10 bytes back into 16 five-bit symbols (inverse of [`pack_symbols`]).
+/// Unpack 10 bytes back into 16 five-bit symbols (inverse of [`pack_symbols`])
 fn unpack_symbols(bytes: &[u8; 10]) -> [u8; 16] {
     let b = bytes;
     let mut s = [0u8; 16];
@@ -597,7 +597,7 @@ fn unpack_symbols(bytes: &[u8; 10]) -> [u8; 16] {
     s
 }
 
-/// Standard CRC-16/CCITT (polynomial 0x1021, initial value 0).
+/// Standard CRC-16/CCITT (polynomial 0x1021, initial value 0)
 fn crc16(data: &[u8]) -> u16 {
     let mut sum: u16 = 0;
     for &byte in data.iter() {
@@ -617,12 +617,12 @@ fn crc16(data: &[u8]) -> u16 {
     sum
 }
 
-/// Encodes a [`GhostData`] into a 16-character Mario Kart DS password.
+/// Encodes a [`GhostData`] into a 16-character Mario Kart DS password
 ///
 /// The returned string uses only uppercase letters from the game's base-32
 /// alphabet (`S7LCX3JZE8FG4HBKWN52YPA6RTU9VMDQ`) and is always exactly 16
 /// characters long. Passing the result to [`decode`] will recover the original
-/// [`GhostData`].
+/// [`GhostData`]
 pub fn encode(data: &GhostData) -> String {
     let char_idx = data.character.to_index() as u32;
     let kart_idx = data.kart.to_index() as u32;
@@ -658,14 +658,14 @@ pub fn encode(data: &GhostData) -> String {
         .collect()
 }
 
-/// Decodes a 16-character Mario Kart DS ghost data password.
+/// Decodes a 16-character Mario Kart DS ghost data password
 ///
 /// Input is case-insensitive. Characters outside the game's base-32 alphabet
 /// (`S7LCX3JZE8FG4HBKWN52YPA6RTU9VMDQ`) are silently ignored before length
-/// validation.
+/// validation
 ///
 /// Returns a [`GhostData`] on success, or a [`DecodeError`] describing why the
-/// password was rejected.
+/// password was rejected
 pub fn decode(password: &str) -> Result<GhostData, DecodeError> {
     // Filter to valid alphabet characters (case-insensitive)
     let mut syms = [0u8; 16];

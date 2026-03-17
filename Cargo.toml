@@ -8,4 +8,7 @@ repository = "https://github.com/tpglitch/mkdedede"
 version = "0.2.0"
 edition = "2024"
 
+[lib]
+crate-type = ["rlib", "cdylib", "staticlib"]
+
 [dependencies]

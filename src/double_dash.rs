@@ -2,7 +2,7 @@
 //!
 //! Decodes the 16-character ghost data passwords the game generates after a
 //! time trial. Each password encodes a course, kart, two drivers, a total
-//! race time, and a best lap time, all protected by a checksum.
+//! race time, and a best lap time, all protected by a checksum
 //!
 //! # Example
 //! ```
@@ -41,7 +41,7 @@ pub enum Course {
 }
 
 impl Course {
-    /// Returns the display name of the course.
+    /// Returns the display name of the course
     pub fn name(self) -> &'static str {
         match self {
             Course::LuigiCircuit => "Luigi Circuit",
@@ -63,9 +63,9 @@ impl Course {
         }
     }
 
-    /// Returns the total number of laps for this course.
+    /// Returns the total number of laps for this course
     ///
-    /// Most courses are 3 laps, Baby Park is 7, and Wario Colosseum is 2.
+    /// Most courses are 3 laps, Baby Park is 7, and Wario Colosseum is 2
     pub fn laps(self) -> u32 {
         match self {
             Course::BabyPark => 7,
@@ -74,7 +74,7 @@ impl Course {
         }
     }
 
-    fn from_index(i: u8) -> Option<Self> {
+    pub(crate) fn from_index(i: u8) -> Option<Self> {
         match i {
             0 => Some(Course::LuigiCircuit),
             1 => Some(Course::PeachBeach),
@@ -150,7 +150,7 @@ pub enum Character {
 }
 
 impl Character {
-    /// Returns the display name of the character.
+    /// Returns the display name of the character
     pub fn name(self) -> &'static str {
         match self {
             Character::BabyMario => "Baby Mario",
@@ -177,7 +177,7 @@ impl Character {
     }
 
     // Character indices in the password are 1-based, subtract 1 before calling this
-    fn from_index(i: u8) -> Option<Self> {
+    pub(crate) fn from_index(i: u8) -> Option<Self> {
         match i {
             0 => Some(Character::BabyMario),
             1 => Some(Character::BabyLuigi),
@@ -203,7 +203,7 @@ impl Character {
         }
     }
 
-    /// Returns the 0-based index used internally (password stores index + 1).
+    /// Returns the 0-based index used internally (password stores index + 1)
     pub(crate) fn to_index(self) -> u8 {
         match self {
             Character::BabyMario => 0,
@@ -263,7 +263,7 @@ pub enum Kart {
 }
 
 impl Kart {
-    /// Returns the display name of the kart.
+    /// Returns the display name of the kart
     pub fn name(self) -> &'static str {
         match self {
             Kart::RedFire => "Red Fire",
@@ -290,7 +290,7 @@ impl Kart {
         }
     }
 
-    fn from_index(i: u8) -> Option<Self> {
+    pub(crate) fn from_index(i: u8) -> Option<Self> {
         match i {
             0 => Some(Kart::RedFire),
             1 => Some(Kart::DkJumbo),
@@ -352,23 +352,23 @@ impl fmt::Display for Kart {
 
 /// A race time, stored as milliseconds
 ///
-/// Displays as `MM : SS . mmm`.
+/// Displays as `MM : SS . mmm`
 // Time stored as milliseconds
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct LapTime(pub u32);
 
 impl LapTime {
-    /// Returns the minutes component.
+    /// Returns the minutes component
     pub fn minutes(self) -> u32 {
         self.0 / 60_000
     }
 
-    /// Returns the seconds component (0-59).
+    /// Returns the seconds component (0-59)
     pub fn seconds(self) -> u32 {
         (self.0 / 1_000) % 60
     }
 
-    /// Returns the milliseconds component (0-999).
+    /// Returns the milliseconds component (0-999)
     pub fn milliseconds(self) -> u32 {
         self.0 % 1_000
     }
@@ -449,7 +449,7 @@ impl fmt::Display for GhostData {
     }
 }
 
-/// Unpack 10 bytes into 16 five-bit symbols (inverse of the pack step in [`decode`]).
+/// Unpack 10 bytes into 16 five-bit symbols (inverse of the pack step in [`decode`])
 fn unpack_symbols(bytes: &[u8; 10]) -> [u8; 16] {
     let b = bytes;
     let mut s = [0u8; 16];
@@ -472,12 +472,12 @@ fn unpack_symbols(bytes: &[u8; 10]) -> [u8; 16] {
     s
 }
 
-/// Encodes a [`GhostData`] into a 16-character Mario Kart: Double Dash!! password.
+/// Encodes a [`GhostData`] into a 16-character Mario Kart: Double Dash!! password
 ///
 /// The returned string uses only uppercase letters from the game's base-32
 /// alphabet (`G6EQTXYN4WRHBFKOIJAPCD5S8V7UZ3LM`) and is always exactly 16
 /// characters long. Passing the result to [`decode`] will recover the original
-/// [`GhostData`].
+/// [`GhostData`]
 pub fn encode(data: &GhostData) -> String {
     let course_idx = data.course.to_index() as u32;
     let kart_idx = data.kart.to_index() as u32;
@@ -488,7 +488,7 @@ pub fn encode(data: &GhostData) -> String {
     let best_ms = data.best_lap.0;
 
     // Checksum: bits 4:2 of the final d[2] are zero (they come from unused padding),
-    // so their contribution to tmp is 0.
+    // so their contribution to tmp is 0
     let tmp = course_idx + kart_idx + driver1_idx + driver2_idx + total_ms + best_ms;
     let checksum =
         ((tmp & 0xFF) + ((tmp >> 8) & 0xFF) + ((tmp >> 16) & 0xFF) + ((tmp >> 24) & 0xFF)) as u8
@@ -528,13 +528,13 @@ pub fn encode(data: &GhostData) -> String {
         .collect()
 }
 
-/// Decodes a 16-character MKDD ghost data password.
+/// Decodes a 16-character MKDD ghost data password
 ///
 /// Input is case-insensitive. Characters outside the game's alphabet are
-/// stripped before length validation.
+/// stripped before length validation
 ///
 /// Returns a [`GhostData`] on success, or a [`DecodeError`] describing why
-/// the password was rejected.
+/// the password was rejected
 pub fn decode(password: &str) -> Result<GhostData, DecodeError> {
     // Normalize uppercase and strip anything outside the valid alphabet
     let password: String = password
